@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html data-theme="light">
+  <head>
+    <title>Duolingo Agent</title>
+    <style>
+      :root {
+        /* Light theme variables */
+        --background-color: #f4f4f9;
+        --container-bg: white;
+        --text-color: #2b4257;
+        --input-border: #e5e5e5;
+        --response-bg: #e6f8e0;
+        --response-text: #333;
+
+        /* Common variables */
+        --duo-green: #58cc02;
+        --duo-dark-blue: #2b4257;
+        --duo-streak: #ff9600;
+      }
+
+      [data-theme="dark"] {
+        --background-color: #1f2937;
+        --container-bg: #2d3748;
+        --text-color: #e2e8f0;
+        --input-border: #4b5563;
+        --response-bg: #2f3c2d;
+        --response-text: #d1d5db;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        padding: 0;
+        margin: 0;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: var(--container-bg);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+      }
+
+      h1 {
+        color: var(--text-color);
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      form {
+        margin-top: 20px;
+      }
+
+      label {
+        display: block;
+        margin: 15px 0 8px;
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      select {
+        padding: 10px;
+        width: 100%;
+        border: 2px solid var(--input-border);
+        border-radius: 8px;
+        font-size: 16px;
+        background-color: var(--container-bg);
+        color: var(--text-color);
+      }
+
+      select:focus {
+        border-color: var(--duo-green);
+        outline: none;
+      }
+
+      button {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-top: 25px;
+        background-color: var(--duo-green);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      button:hover {
+        background-color: #4caf00;
+      }
+
+      .response {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: var(--response-bg);
+        border-left: 4px solid var(--duo-green);
+        border-radius: 4px;
+      }
+
+      .response p {
+        margin: 0;
+        font-size: 18px;
+        color: var(--response-text);
+      }
+
+      .response strong {
+        color: var(--duo-green);
+      }
+
+      .streak-icon {
+        color: var(--duo-streak);
+        margin-left: 5px;
+      }
+
+      .theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        width: auto;
+        margin: 0;
+        padding: 5px;
+        background-color: transparent;
+      }
+
+      .theme-toggle:hover {
+        background-color: transparent;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 20px auto;
+          padding: 20px;
+        }
+
+        .theme-toggle {
+          top: 10px;
+          right: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button
+      class="theme-toggle"
+      id="theme-toggle"
+      aria-label="Toggle dark mode"
+    >
+      🌓
+    </button>
+
+    <div class="container">
+      <h1>💬 Duolingo Reflex Agent</h1>
+      <form method="post">
+        <label>Did you do today's lesson?</label>
+        <select name="lesson_done">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+
+        <label>Do you have a streak? <span class="streak-icon">🔥</span></label>
+        <select name="streak">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+
+        <label>Did you make a mistake last session?</label>
+        <select name="mistake">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+
+        <button type="submit">Get Recommendation</button>
+      </form>
+
+      {% if response %}
+      <div class="response">
+        <p><strong>OWL says:</strong> {{ response }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      // Theme toggle functionality
+      const themeToggle = document.getElementById("theme-toggle");
+      const htmlElement = document.documentElement;
+
+      // Check for saved theme preference or use preferred color scheme
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        htmlElement.setAttribute("data-theme", savedTheme);
+      } else if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        htmlElement.setAttribute("data-theme", "dark");
+      }
+
+      // Update button text based on current theme
+      updateToggleText();
+
+      // Add event listener to theme toggle button
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+        htmlElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+
+        updateToggleText();
+      });
+
+      function updateToggleText() {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
+      }
+    </script>
+  </body>
+</html>
